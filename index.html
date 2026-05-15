@@ -43,21 +43,32 @@
     font-size: 0.9rem; letter-spacing: 0.12em;
     color: rgba(255,255,255,0.55); text-decoration: none; transition: color 0.2s;
   }
-  @media (min-width: 768px) {
-    nav {
-        padding: 0 3rem;
-    }
+/* ========================================================== */
+/* ナビゲーションの配置: PCで中央寄せ                         */
+/* ========================================================== */
+@media (min-width: 768px) {
+  nav {
+    justify-content: flex-start !important;
+    gap: 2rem;
   }
-  .nav-links a:hover { color: var(--orange); }
+  
+  /* メニューを中央に配置(残りスペースの中央) */
+  .nav-links {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  /* JOIN US ボタンを右端に固定するために、リンクの後ろに余白を作る */
+  .nav-links {
+    flex: 1;
+    justify-content: center;
+  }
+  
+  /* JOIN US ボタンだけ右端に */
   .nav-join {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 900; font-style: italic;
-    font-size: 0.9rem; letter-spacing: 0.15em;
-    background: var(--orange); color: var(--black);
-    padding: 0.5rem 1.4rem; border-radius: 2px;
-    text-decoration: none; transition: background 0.2s;
+    margin-left: auto;
   }
-  .nav-join:hover { background: var(--orange-light); }
+}
 
   /* HERO */
   .hero {
