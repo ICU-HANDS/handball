@@ -464,6 +464,240 @@
 
   .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.75s ease, transform 0.75s ease; }
   .reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ========================================================== */
+/* スマホ・タブレット対応 (画面幅 767px以下)                  */
+/* ========================================================== */
+@media (max-width: 767px) {
+  
+  /* --- NAV: ナビゲーションを横スクロールに --- */
+  nav {
+    padding: 0 1rem;
+    height: 60px;
+  }
+  .nav-logo img { height: 32px; width: 32px; }
+  .nav-logo-text { font-size: 0.95rem; }
+  .nav-links {
+    gap: 0.6rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .nav-links::-webkit-scrollbar { display: none; }
+  .nav-links a {
+    font-size: 0.7rem;
+    white-space: nowrap;
+    letter-spacing: 0.08em;
+  }
+  .nav-join {
+    font-size: 0.7rem;
+    padding: 0.35rem 0.7rem;
+    white-space: nowrap;
+    letter-spacing: 0.1em;
+  }
+
+  /* --- HERO: 縦並び・余白縮小 --- */
+  .hero {
+    grid-template-columns: 1fr !important;
+    padding-top: 60px;
+    min-height: auto;
+  }
+  .hero-left {
+    padding: 2rem 1.25rem 1.5rem !important;
+  }
+  .hero-right {
+    padding: 1rem;
+    min-height: 280px;
+  }
+  .hero-logo-img {
+    width: min(60vw, 240px) !important;
+  }
+  .hero-eyebrow {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    margin-bottom: 0.8rem;
+  }
+  .hero-title {
+    font-size: clamp(2.5rem, 13vw, 4rem) !important;
+    line-height: 0.95;
+  }
+  .hero-logo-number {
+    font-size: 5rem;
+  }
+
+  /* --- 共通: section padding --- */
+  section {
+    padding-left: 1.25rem !important;
+    padding-right: 1.25rem !important;
+  }
+
+  /* --- STATS: 2列に --- */
+  .stats-bar,
+  .stats-section,
+  [class*="stat"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  .stat-num {
+    font-size: 2.5rem !important;
+  }
+  .stat-label {
+    font-size: 0.65rem !important;
+    letter-spacing: 0.1em !important;
+  }
+
+  /* --- セクションタイトル --- */
+  .sec-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+  }
+  .sec-title {
+    font-size: clamp(2rem, 9vw, 3rem) !important;
+    line-height: 0.95;
+  }
+
+  /* --- MATCHES: 縦並びカード形式に --- */
+  .match-row {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+    padding: 1rem !important;
+    text-align: left;
+  }
+  .match-date {
+    font-size: 0.8rem;
+  }
+  .match-team {
+    font-size: 0.95rem;
+    white-space: normal !important;
+    word-break: keep-all;
+  }
+  .match-team.home {
+    text-align: left !important;
+  }
+  .match-score {
+    font-size: 1.4rem;
+    text-align: left !important;
+  }
+  .match-badge {
+    width: fit-content;
+    font-size: 0.7rem;
+    padding: 0.25rem 0.6rem;
+  }
+
+  /* --- MATCHES タブ --- */
+  .matches-tabs {
+    gap: 0.5rem;
+  }
+  .tab-btn {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+  }
+
+  /* --- MEMBERS: 2列グリッドに --- */
+  .members-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.75rem !important;
+  }
+  .member-name {
+    font-size: 0.85rem;
+  }
+  .member-year, .member-pos {
+    font-size: 0.7rem;
+  }
+
+  /* --- JOIN セクション: 縦並びに --- */
+  .join-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1.5rem !important;
+  }
+  .join-section {
+    padding: 3rem 1.25rem !important;
+  }
+  .join-items {
+    gap: 1.5rem;
+  }
+  .join-item {
+    grid-template-columns: auto 1fr !important;
+    gap: 1rem;
+  }
+  .join-num {
+    font-size: 2rem;
+  }
+  .join-item-title {
+    font-size: 1rem;
+    word-break: keep-all;
+  }
+  .join-item-text {
+    font-size: 0.85rem;
+    word-break: keep-all;
+  }
+  .join-detail {
+    padding: 1.25rem !important;
+  }
+  .detail-row {
+    grid-template-columns: 5rem 1fr !important;
+    gap: 0.5rem;
+  }
+  .detail-key {
+    font-size: 0.75rem;
+  }
+  .detail-val {
+    font-size: 0.85rem;
+    word-break: keep-all;
+  }
+
+  /* --- ボタン --- */
+  .btn-outline, .btn-primary {
+    font-size: 0.85rem !important;
+    padding: 0.8rem 1.5rem !important;
+    white-space: nowrap;
+    display: inline-block;
+  }
+
+  /* --- INSTAGRAM --- */
+  .insta-section {
+    padding: 3rem 1.25rem !important;
+  }
+  .insta-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.5rem;
+  }
+  .insta-handle {
+    font-size: 2.2rem !important;
+  }
+
+  /* --- FOOTER --- */
+  footer {
+    grid-template-columns: 1fr !important;
+    padding: 2rem 1.25rem !important;
+    gap: 1.5rem !important;
+  }
+  .footer-name {
+    font-size: 1rem;
+  }
+  .footer-sub {
+    font-size: 0.7rem;
+  }
+
+  /* --- 画像のはみ出し対策 --- */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* --- 全体: 横スクロール禁止 --- */
+  body, html {
+    overflow-x: hidden;
+  }
+}
+
+/* 超小型スマホ用(390px以下) */
+@media (max-width: 390px) {
+  .nav-logo-text { font-size: 0.85rem; }
+  .nav-links a { font-size: 0.65rem; }
+  .hero-title { font-size: 2.3rem !important; }
+  .members-grid { grid-template-columns: 1fr !important; }
+} 
 </style>
 </head>
 <body>
