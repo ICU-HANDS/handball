@@ -314,222 +314,248 @@
   <div class="footer-copy">© 2025 ICU HANDS. ALL RIGHTS RESERVED.</div>
 </footer>
 
-<script>
-const SAMPLE_MATCHES = [
-  {"id":1,"date":"2025-05-10","time":"13:00","league":"spring","gender":"men","opponent":"青山学院大学","venue":"青山学院大学体育館","home":true,"scoreUs":28,"scoreThem":21,"status":"done"},
-  {"id":2,"date":"2025-05-17","time":"15:00","league":"spring","gender":"men","opponent":"明治大学","venue":"明治大学和泉体育館","home":false,"scoreUs":19,"scoreThem":23,"status":"done"},
-  {"id":3,"date":"2025-05-24","time":"13:00","league":"spring","gender":"men","opponent":"早稲田大学","venue":"ICU体育館","home":true,"scoreUs":31,"scoreThem":29,"status":"done"},
-  {"id":4,"date":"2025-05-31","time":"14:00","league":"spring","gender":"men","opponent":"法政大学","venue":"駒沢体育館","home":false,"scoreUs":22,"scoreThem":22,"status":"done"},
-  {"id":5,"date":"2025-06-07","time":"13:00","league":"spring","gender":"men","opponent":"中央大学","venue":"ICU体育館","home":true,"scoreUs":null,"scoreThem":null,"status":"upcoming"},
-  {"id":6,"date":"2025-06-14","time":"15:00","league":"spring","gender":"men","opponent":"東京大学","venue":"東京大学体育館","home":false,"scoreUs":null,"scoreThem":null,"status":"upcoming"},
-  {"id":7,"date":"2025-09-20","time":"13:00","league":"autumn","gender":"men","opponent":"慶應義塾大学","venue":"ICU体育館","home":true,"scoreUs":null,"scoreThem":null,"status":"upcoming"},
-  {"id":8,"date":"2025-05-10","time":"11:00","league":"spring","gender":"women","opponent":"津田塾大学","venue":"津田塾大学体育館","home":false,"scoreUs":24,"scoreThem":18,"status":"done"},
-  {"id":9,"date":"2025-05-17","time":"13:00","league":"spring","gender":"women","opponent":"東京女子大学","venue":"ICU体育館","home":true,"scoreUs":30,"scoreThem":22,"status":"done"},
-  {"id":10,"date":"2025-06-07","time":"15:00","league":"spring","gender":"women","opponent":"お茶の水女子大学","venue":"お茶の水女子大学体育館","home":false,"scoreUs":null,"scoreThem":null,"status":"upcoming"},
-  {"id":11,"date":"2025-09-20","time":"15:30","league":"autumn","gender":"women","opponent":"日本女子大学","venue":"ICU体育館","home":true,"scoreUs":null,"scoreThem":null,"status":"upcoming"},
-  {"id":12,"date":"2025-04-12","time":"14:00","league":"practice","gender":"women","opponent":"立教大学","venue":"立教大学体育館","home":false,"scoreUs":26,"scoreThem":20,"status":"done"}
-];
-const LEAGUE_NAMES = {spring:'春リーグ', autumn:'秋リーグ', practice:'練習試合'};
-const WD_JP = ['日','月','火','水','木','金','土'];
-const MONTH_NAMES = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+<script type="module">
+  // ── FIREBASE 初期化 ────────────────────────────────────────
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+  import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-let curGender = 'all';
-let curLeague = 'all';
-let curSort = 'asc';
+  const firebaseConfig = {
+    apiKey: "AIzaSyBVL-uye0BBw9RJLQ1EA5w8o5Dhta7B_ns",
+    authDomain: "icu-hands.firebaseapp.com",
+    projectId: "icu-hands",
+    storageBucket: "icu-hands.firebasestorage.app",
+    messagingSenderId: "844822728120",
+    appId: "1:844822728120:web:dd57b34f0c40bf75a5134d",
+    measurementId: "G-KVMLVVP8P9"
+  };
 
-function getMatches() {
-  try { const s = localStorage.getItem('icuhands_matches'); return s ? JSON.parse(s) : SAMPLE_MATCHES; }
-  catch(e) { return SAMPLE_MATCHES; }
-}
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-// Returns a sortable key combining date + time
-function sortKey(m) {
-  return (m.date || '9999-99-99') + 'T' + (m.time || '00:00');
-}
+  // ── サンプルデータ(Firestore接続前のフォールバック)──────
+  const SAMPLE_MATCHES = [
+    {"id":1,"date":"2025-05-10","time":"13:00","league":"spring","gender":"men","opponent":"青山学院大学","venue":"青山学院大学体育館","home":true,"scoreUs":28,"scoreThem":21,"status":"done"},
+    {"id":2,"date":"2025-05-17","time":"15:00","league":"spring","gender":"men","opponent":"明治大学","venue":"明治大学和泉体育館","home":false,"scoreUs":19,"scoreThem":23,"status":"done"},
+    {"id":3,"date":"2025-05-24","time":"13:00","league":"spring","gender":"men","opponent":"早稲田大学","venue":"ICU体育館","home":true,"scoreUs":31,"scoreThem":29,"status":"done"},
+    {"id":4,"date":"2025-05-31","time":"14:00","league":"spring","gender":"men","opponent":"法政大学","venue":"駒沢体育館","home":false,"scoreUs":22,"scoreThem":22,"status":"done"},
+    {"id":5,"date":"2025-06-07","time":"13:00","league":"spring","gender":"men","opponent":"中央大学","venue":"ICU体育館","home":true,"scoreUs":null,"scoreThem":null,"status":"upcoming"},
+    {"id":6,"date":"2025-06-14","time":"15:00","league":"spring","gender":"men","opponent":"東京大学","venue":"東京大学体育館","home":false,"scoreUs":null,"scoreThem":null,"status":"upcoming"},
+    {"id":7,"date":"2025-09-20","time":"13:00","league":"autumn","gender":"men","opponent":"慶應義塾大学","venue":"ICU体育館","home":true,"scoreUs":null,"scoreThem":null,"status":"upcoming"},
+    {"id":8,"date":"2025-05-10","time":"11:00","league":"spring","gender":"women","opponent":"津田塾大学","venue":"津田塾大学体育館","home":false,"scoreUs":24,"scoreThem":18,"status":"done"},
+    {"id":9,"date":"2025-05-17","time":"13:00","league":"spring","gender":"women","opponent":"東京女子大学","venue":"ICU体育館","home":true,"scoreUs":30,"scoreThem":22,"status":"done"},
+    {"id":10,"date":"2025-06-07","time":"15:00","league":"spring","gender":"women","opponent":"お茶の水女子大学","venue":"お茶の水女子大学体育館","home":false,"scoreUs":null,"scoreThem":null,"status":"upcoming"},
+    {"id":11,"date":"2025-09-20","time":"15:30","league":"autumn","gender":"women","opponent":"日本女子大学","venue":"ICU体育館","home":true,"scoreUs":null,"scoreThem":null,"status":"upcoming"},
+    {"id":12,"date":"2025-04-12","time":"14:00","league":"practice","gender":"women","opponent":"立教大学","venue":"立教大学体育館","home":false,"scoreUs":26,"scoreThem":20,"status":"done"}
+  ];
+  const LEAGUE_NAMES = {spring:'春リーグ', autumn:'秋リーグ', practice:'練習試合'};
+  const WD_JP = ['日','月','火','水','木','金','土'];
+  const MONTH_NAMES = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
-function resultOf(m) {
-  if (m.status !== 'done') return 'next';
-  if (m.scoreUs > m.scoreThem) return 'win';
-  if (m.scoreUs < m.scoreThem) return 'loss';
-  return 'draw';
-}
+  let curGender = 'all';
+  let curLeague = 'all';
+  let curSort = 'asc';
 
-function genderTag(g) {
-  if (g === 'men') return `<span class="mr-tag mr-tag-gender" data-g="men">MEN'S</span>`;
-  if (g === 'women') return `<span class="mr-tag mr-tag-gender" data-g="women">WOMEN'S</span>`;
-  return '';
-}
+  // ── データキャッシュ ─────────────────────────────────────
+  let matchesCache = null;
 
-function renderNextMatch() {
-  const today = new Date(); today.setHours(0,0,0,0);
-  const upcoming = getMatches()
-    .filter(m => m.status === 'upcoming' && (curGender === 'all' || m.gender === curGender))
-    .filter(m => new Date(m.date) >= today)
-    .sort((a,b) => sortKey(a).localeCompare(sortKey(b)));
-  const section = document.getElementById('nextMatchSection');
-  if (!upcoming.length) {
-    section.innerHTML = `<div class="empty-msg" style="margin-bottom:3rem;">NO UPCOMING MATCHES</div>`;
-    return;
+  function getMatches() {
+    return matchesCache !== null ? matchesCache : SAMPLE_MATCHES;
   }
-  const m = upcoming[0];
-  const dt = new Date(m.date);
-  const day = dt.getDate();
-  const month = MONTH_NAMES[dt.getMonth()];
-  const wd = WD_JP[dt.getDay()];
-  const days = Math.ceil((dt - today) / 86400000);
-  const cdLabel = days === 0 ? 'TODAY' : days === 1 ? 'DAY' : 'DAYS';
-  const cdNum = days === 0 ? 'TODAY' : days;
-  const homeAway = m.home ? 'HOME' : 'AWAY';
-  const timeStr = m.time ? `<span class="nm-time">⏱ ${m.time} 開始</span>` : '';
-  section.innerHTML = `
-    <p class="next-match-label">NEXT MATCH</p>
-    <div class="next-match-card">
-      <div class="nm-date-block">
-        <div class="nm-day">${day}</div>
-        <div class="nm-month">${month}</div>
-        <div class="nm-weekday">${wd}曜日</div>
+
+  // ── Firestore からデータをリアルタイム取得 ──────────────
+  onSnapshot(collection(db, "matches"), (snapshot) => {
+    matchesCache = snapshot.docs.map(d => d.data());
+    console.log('Firestoreから試合データ取得:', matchesCache.length + '件');
+    renderNextMatch();
+    renderSchedule();
+  }, (error) => {
+    console.error('Firestore読み込みエラー:', error);
+  });
+
+  function sortKey(m) {
+    return (m.date || '9999-99-99') + 'T' + (m.time || '00:00');
+  }
+
+  function resultOf(m) {
+    if (m.status !== 'done') return 'next';
+    if (m.scoreUs > m.scoreThem) return 'win';
+    if (m.scoreUs < m.scoreThem) return 'loss';
+    return 'draw';
+  }
+
+  function genderTag(g) {
+    if (g === 'men') return `<span class="mr-tag mr-tag-gender" data-g="men">MEN'S</span>`;
+    if (g === 'women') return `<span class="mr-tag mr-tag-gender" data-g="women">WOMEN'S</span>`;
+    return '';
+  }
+
+  function renderNextMatch() {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const upcoming = getMatches()
+      .filter(m => m.status === 'upcoming' && (curGender === 'all' || m.gender === curGender))
+      .filter(m => new Date(m.date) >= today)
+      .sort((a,b) => sortKey(a).localeCompare(sortKey(b)));
+    const section = document.getElementById('nextMatchSection');
+    if (!section) return;
+    if (!upcoming.length) {
+      section.innerHTML = `<div class="empty-msg" style="margin-bottom:3rem;">NO UPCOMING MATCHES</div>`;
+      return;
+    }
+    const m = upcoming[0];
+    const dt = new Date(m.date);
+    const day = dt.getDate();
+    const month = MONTH_NAMES[dt.getMonth()];
+    const wd = WD_JP[dt.getDay()];
+    const days = Math.ceil((dt - today) / 86400000);
+    const cdLabel = days === 0 ? 'TODAY' : days === 1 ? 'DAY' : 'DAYS';
+    const cdNum = days === 0 ? 'TODAY' : days;
+    const homeAway = m.home ? 'HOME' : 'AWAY';
+    const timeStr = m.time ? `<span class="nm-time">⏱ ${m.time} 開始</span>` : '';
+    section.innerHTML = `
+      <p class="next-match-label">NEXT MATCH</p>
+      <div class="next-match-card">
+        <div class="nm-date-block">
+          <div class="nm-day">${day}</div>
+          <div class="nm-month">${month}</div>
+          <div class="nm-weekday">${wd}曜日</div>
+        </div>
+        <div class="nm-info">
+          <div class="nm-opp">vs ${m.opponent}</div>
+          <div class="nm-meta">
+            ${timeStr}
+            <span>📍 ${m.venue}</span>
+            <span>${homeAway}</span>
+            <span class="nm-tag" data-g="${m.gender}">${m.gender==='men'?"MEN'S":"WOMEN'S"}</span>
+            <span class="nm-tag league">${LEAGUE_NAMES[m.league]||''}</span>
+          </div>
+        </div>
+        <div class="nm-countdown">
+          <div class="nm-cd-label">COUNTDOWN</div>
+          <div class="nm-cd-num">${cdNum}</div>
+          ${days === 0 ? '' : `<div class="nm-cd-unit">${cdLabel}</div>`}
+        </div>
+      </div>`;
+  }
+
+  function renderRow(m) {
+    const dt = new Date(m.date);
+    const day = dt.getDate();
+    const wd = WD_JP[dt.getDay()];
+    const r = resultOf(m);
+    const resultLabels = {win:'WIN', loss:'LOSS', draw:'DRAW', next:'NEXT'};
+    const scoreHTML = m.status === 'done'
+      ? `<div class="mr-score-block"><span class="mr-score-us">${m.scoreUs}</span><span class="mr-score-sep">–</span><span class="mr-score-them">${m.scoreThem}</span></div>`
+      : `<div class="mr-tbd">vs</div>`;
+    const homeAway = m.home ? 'HOME' : 'AWAY';
+    return `<div class="match-row" data-g="${m.gender}" data-status="${m.status}">
+      <div class="mr-date">
+        <div class="mr-day">${day}</div>
+        <div class="mr-day-meta">${wd}曜</div>
+        ${m.time ? `<div class="mr-time">${m.time}</div>` : ''}
       </div>
-      <div class="nm-info">
-        <div class="nm-opp">vs ${m.opponent}</div>
-        <div class="nm-meta">
-          ${timeStr}
+      <div class="mr-info">
+        <div class="mr-opp">vs ${m.opponent}</div>
+        <div class="mr-meta">
           <span>📍 ${m.venue}</span>
           <span>${homeAway}</span>
-          <span class="nm-tag" data-g="${m.gender}">${m.gender==='men'?"MEN'S":"WOMEN'S"}</span>
-          <span class="nm-tag league">${LEAGUE_NAMES[m.league]||''}</span>
+          ${genderTag(m.gender)}
         </div>
       </div>
-      <div class="nm-countdown">
-        <div class="nm-cd-label">COUNTDOWN</div>
-        <div class="nm-cd-num">${cdNum}</div>
-        ${days === 0 ? '' : `<div class="nm-cd-unit">${cdLabel}</div>`}
-      </div>
+      ${scoreHTML}
+      <span class="mr-tag mr-tag-league">${LEAGUE_NAMES[m.league]||''}</span>
+      <div class="mr-result ${r}">${resultLabels[r]}</div>
     </div>`;
-}
-
-function renderRow(m) {
-  const dt = new Date(m.date);
-  const day = dt.getDate();
-  const wd = WD_JP[dt.getDay()];
-  const r = resultOf(m);
-  const resultLabels = {win:'WIN', loss:'LOSS', draw:'DRAW', next:'NEXT'};
-  const scoreHTML = m.status === 'done'
-    ? `<div class="mr-score-block"><span class="mr-score-us">${m.scoreUs}</span><span class="mr-score-sep">–</span><span class="mr-score-them">${m.scoreThem}</span></div>`
-    : `<div class="mr-tbd">vs</div>`;
-  const homeAway = m.home ? 'HOME' : 'AWAY';
-  const timeMeta = m.time ? `<span>⏱ ${m.time}</span>` : '';
-  return `<div class="match-row" data-g="${m.gender}" data-status="${m.status}">
-    <div class="mr-date">
-      <div class="mr-day">${day}</div>
-      <div class="mr-day-meta">${wd}曜</div>
-      ${m.time ? `<div class="mr-time">${m.time}</div>` : ''}
-    </div>
-    <div class="mr-info">
-      <div class="mr-opp">vs ${m.opponent}</div>
-      <div class="mr-meta">
-        <span>📍 ${m.venue}</span>
-        <span>${homeAway}</span>
-        ${genderTag(m.gender)}
-      </div>
-    </div>
-    ${scoreHTML}
-    <span class="mr-tag mr-tag-league">${LEAGUE_NAMES[m.league]||''}</span>
-    <div class="mr-result ${r}">${resultLabels[r]}</div>
-  </div>`;
-}
-
-function renderMonthGroups(matches, sortAsc) {
-  // Group by year-month
-  const groups = {};
-  matches.forEach(m => {
-    const key = m.date.slice(0,7);
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(m);
-  });
-  const groupKeys = Object.keys(groups).sort((a,b) => sortAsc ? a.localeCompare(b) : b.localeCompare(a));
-  return groupKeys.map(key => {
-    const [yyyy, mm] = key.split('-');
-    const monthName = MONTH_NAMES[parseInt(mm)-1];
-    // Sort matches within month
-    const sorted = [...groups[key]].sort((a,b) => sortAsc ? sortKey(a).localeCompare(sortKey(b)) : sortKey(b).localeCompare(sortKey(a)));
-    const rows = sorted.map(renderRow).join('');
-    return `<div class="month-group">
-      <div class="month-header">
-        <div class="month-num">${parseInt(mm)}</div>
-        <div class="month-text">${monthName} ${yyyy}</div>
-      </div>
-      ${rows}
-    </div>`;
-  }).join('');
-}
-
-function renderSchedule() {
-  const all = getMatches()
-    .filter(m => curGender === 'all' || m.gender === curGender)
-    .filter(m => curLeague === 'all' || m.league === curLeague);
-
-  const today = new Date(); today.setHours(0,0,0,0);
-  // Upcoming: status=upcoming OR date in future
-  const upcoming = all.filter(m => m.status === 'upcoming' || new Date(m.date) >= today);
-  const past = all.filter(m => m.status === 'done' && new Date(m.date) < today);
-
-  const list = document.getElementById('scheduleList');
-  if (!upcoming.length && !past.length) {
-    list.innerHTML = '<div class="empty-msg">NO MATCHES</div>';
-    return;
   }
 
-  let html = '';
-  // ── Upcoming section ──
-  if (upcoming.length) {
-    html += `<div class="status-divider">
-      <div class="status-divider-label"><span class="dot"></span>UPCOMING MATCHES</div>
-      <div class="status-divider-line"></div>
-      <div class="status-divider-count">${upcoming.length} 試合</div>
-    </div>`;
-    html += renderMonthGroups(upcoming, curSort === 'asc');
+  function renderMonthGroups(matches, sortAsc) {
+    const groups = {};
+    matches.forEach(m => {
+      const key = m.date.slice(0,7);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(m);
+    });
+    const groupKeys = Object.keys(groups).sort((a,b) => sortAsc ? a.localeCompare(b) : b.localeCompare(a));
+    return groupKeys.map(key => {
+      const [yyyy, mm] = key.split('-');
+      const monthName = MONTH_NAMES[parseInt(mm)-1];
+      const sorted = [...groups[key]].sort((a,b) => sortAsc ? sortKey(a).localeCompare(sortKey(b)) : sortKey(b).localeCompare(sortKey(a)));
+      const rows = sorted.map(renderRow).join('');
+      return `<div class="month-group">
+        <div class="month-header">
+          <div class="month-num">${parseInt(mm)}</div>
+          <div class="month-text">${monthName} ${yyyy}</div>
+        </div>
+        ${rows}
+      </div>`;
+    }).join('');
   }
-  // ── Past section ──
-  if (past.length) {
-    html += `<div class="status-divider past">
-      <div class="status-divider-label"><span class="dot"></span>PAST MATCHES</div>
-      <div class="status-divider-line"></div>
-      <div class="status-divider-count">${past.length} 試合</div>
-    </div>`;
-    // Past matches: always newest first (regardless of sort toggle)
-    html += renderMonthGroups(past, false);
+
+  function renderSchedule() {
+    const all = getMatches()
+      .filter(m => curGender === 'all' || m.gender === curGender)
+      .filter(m => curLeague === 'all' || m.league === curLeague);
+
+    const today = new Date(); today.setHours(0,0,0,0);
+    const upcoming = all.filter(m => m.status === 'upcoming' || new Date(m.date) >= today);
+    const past = all.filter(m => m.status === 'done' && new Date(m.date) < today);
+
+    const list = document.getElementById('scheduleList');
+    if (!list) return;
+    if (!upcoming.length && !past.length) {
+      list.innerHTML = '<div class="empty-msg">NO MATCHES</div>';
+      return;
+    }
+
+    let html = '';
+    if (upcoming.length) {
+      html += `<div class="status-divider">
+        <div class="status-divider-label"><span class="dot"></span>UPCOMING MATCHES</div>
+        <div class="status-divider-line"></div>
+        <div class="status-divider-count">${upcoming.length} 試合</div>
+      </div>`;
+      html += renderMonthGroups(upcoming, curSort === 'asc');
+    }
+    if (past.length) {
+      html += `<div class="status-divider past">
+        <div class="status-divider-label"><span class="dot"></span>PAST MATCHES</div>
+        <div class="status-divider-line"></div>
+        <div class="status-divider-count">${past.length} 試合</div>
+      </div>`;
+      html += renderMonthGroups(past, false);
+    }
+
+    list.innerHTML = html;
   }
 
-  list.innerHTML = html;
-}
+  document.querySelectorAll('.gender-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      curGender = btn.dataset.g;
+      renderNextMatch(); renderSchedule();
+    });
+  });
+  document.querySelectorAll('.sub-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      curLeague = btn.dataset.l;
+      renderSchedule();
+    });
+  });
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      curSort = btn.dataset.s;
+      renderSchedule();
+    });
+  });
 
-document.querySelectorAll('.gender-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    curGender = btn.dataset.g;
-    renderNextMatch(); renderSchedule();
-  });
-});
-document.querySelectorAll('.sub-tab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    curLeague = btn.dataset.l;
-    renderSchedule();
-  });
-});
-document.querySelectorAll('.sort-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    curSort = btn.dataset.s;
-    renderSchedule();
-  });
-});
-
-renderNextMatch();
-renderSchedule();
+  renderNextMatch();
+  renderSchedule();
+  console.log("schedule.html Firebase 連携完了!");
 </script>
+ 
 </body>
 </html>
