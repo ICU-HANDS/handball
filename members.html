@@ -219,105 +219,157 @@
   <div class="footer-copy">© 2025 ICU HANDS. ALL RIGHTS RESERVED.</div>
 </footer>
 
-<script>
-const SAMPLE = [{"id": 1, "name": "山田太郎", "year": "4", "gender": "men", "position": "GK", "origin": "東京都・湘南学園", "entry": "ハンドボールの魅力に惹かれて", "skill": "守備・反射神経", "comment": "最後の年、全力でチームを支えます", "photo": ""}, {"id": 2, "name": "鈴木一郎", "year": "2", "gender": "men", "position": "CB", "origin": "埼玉県・志木高校", "entry": "大学で始めた", "skill": "背の高さ・シュート", "comment": "まだまだ成長中です", "photo": ""}, {"id": 3, "name": "鈴木健太", "year": "2", "gender": "men", "position": "CF", "origin": "愛知県・豊田高校", "entry": "高校の部活から", "skill": "シュート精度・状況判断", "comment": "連覇を目指して全力で", "photo": ""}, {"id": 4, "name": "佐藤花子", "year": "3", "gender": "women", "position": "LW", "origin": "神奈川県・慶應義塾大学附属", "entry": "中学から続けていて", "skill": "スピード・判断力", "comment": "攻撃のスピード感を大事に", "photo": ""}, {"id": 5, "name": "田中美咲", "year": "1", "gender": "women", "position": "RW", "origin": "千葉県・市原高校", "entry": "友人の誘いで", "skill": "ドリブル・体の柔軟性", "comment": "チームの一員として頑張ります", "photo": ""}, {"id": 6, "name": "工藤由美", "year": "3", "gender": "women", "position": "RB", "origin": "大阪府・大阪桐蔭高校", "entry": "小学校から", "skill": "パス精度・ディフェンス", "comment": "先輩として後輩をサポート", "photo": ""}, {"id": 7, "name": "林あかり", "year": "2", "gender": "manager", "position": "MGR", "origin": "東京都・豊島高校", "entry": "友人に誘われて", "skill": "写真・動画編集", "comment": "みんなが輝けるようサポートします", "photo": ""}, {"id": 8, "name": "中村さくら", "year": "1", "gender": "manager", "position": "MGR", "origin": "神奈川県・横浜高校", "entry": "スポーツが好きで", "skill": "料理・栄養管理", "comment": "チームのために全力で頑張ります", "photo": ""}];
-const POS_LABELS = {GK:'ゴールキーパー',FB:'フルバック',LW:'レフトウイング',CF:'センターフォワード',RW:'ライトウイング',LB:'レフトバック',RB:'ライトバック',CB:'センターバック',MGR:'マネージャー'};
-let currentGender = 'men';
-let currentPos = 'all';
+<script type="module">
+  // ── FIREBASE 初期化 ────────────────────────────────────────
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+  import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-function getMembers() {
-  try { const s = localStorage.getItem('icuhands_members'); return s ? JSON.parse(s) : SAMPLE; } catch(e) { return SAMPLE; }
-}
+  const firebaseConfig = {
+    apiKey: "AIzaSyBVL-uye0BBw9RJLQ1EA5w8o5Dhta7B_ns",
+    authDomain: "icu-hands.firebaseapp.com",
+    projectId: "icu-hands",
+    storageBucket: "icu-hands.firebasestorage.app",
+    messagingSenderId: "844822728120",
+    appId: "1:844822728120:web:dd57b34f0c40bf75a5134d",
+    measurementId: "G-KVMLVVP8P9"
+  };
 
-function renderPosFilter() {
-  const members = getMembers().filter(m => m.gender === currentGender);
-  const positions = [...new Set(members.map(m => m.position))].sort();
-  const filter = document.getElementById('posFilter');
-  if (currentGender === 'manager') { filter.style.display='none'; return; }
-  filter.style.display='flex';
-  let html = `<button class="pos-badge ${currentPos==='all'?'active':''}" data-pos="all">すべて</button>`;
-  positions.forEach(p => {
-    html += `<button class="pos-badge ${currentPos===p?'active':''}" data-pos="${p}">${POS_LABELS[p]||p}</button>`;
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // ── サンプルデータ(Firestore接続前のフォールバック)──────
+  const SAMPLE = [{"id": 1, "name": "山田太郎", "year": "4", "gender": "men", "position": "GK", "origin": "東京都・湘南学園", "entry": "ハンドボールの魅力に惹かれて", "skill": "守備・反射神経", "comment": "最後の年、全力でチームを支えます", "photo": ""}, {"id": 2, "name": "鈴木一郎", "year": "2", "gender": "men", "position": "CB", "origin": "埼玉県・志木高校", "entry": "大学で始めた", "skill": "背の高さ・シュート", "comment": "まだまだ成長中です", "photo": ""}, {"id": 3, "name": "鈴木健太", "year": "2", "gender": "men", "position": "CF", "origin": "愛知県・豊田高校", "entry": "高校の部活から", "skill": "シュート精度・状況判断", "comment": "連覇を目指して全力で", "photo": ""}, {"id": 4, "name": "佐藤花子", "year": "3", "gender": "women", "position": "LW", "origin": "神奈川県・慶應義塾大学附属", "entry": "中学から続けていて", "skill": "スピード・判断力", "comment": "攻撃のスピード感を大事に", "photo": ""}, {"id": 5, "name": "田中美咲", "year": "1", "gender": "women", "position": "RW", "origin": "千葉県・市原高校", "entry": "友人の誘いで", "skill": "ドリブル・体の柔軟性", "comment": "チームの一員として頑張ります", "photo": ""}, {"id": 6, "name": "工藤由美", "year": "3", "gender": "women", "position": "RB", "origin": "大阪府・大阪桐蔭高校", "entry": "小学校から", "skill": "パス精度・ディフェンス", "comment": "先輩として後輩をサポート", "photo": ""}, {"id": 7, "name": "林あかり", "year": "2", "gender": "manager", "position": "MGR", "origin": "東京都・豊島高校", "entry": "友人に誘われて", "skill": "写真・動画編集", "comment": "みんなが輝けるようサポートします", "photo": ""}, {"id": 8, "name": "中村さくら", "year": "1", "gender": "manager", "position": "MGR", "origin": "神奈川県・横浜高校", "entry": "スポーツが好きで", "skill": "料理・栄養管理", "comment": "チームのために全力で頑張ります", "photo": ""}];
+  const POS_LABELS = {GK:'ゴールキーパー',FB:'フルバック',LW:'レフトウイング',CF:'センターフォワード',RW:'ライトウイング',LB:'レフトバック',RB:'ライトバック',CB:'センターバック',MGR:'マネージャー'};
+  let currentGender = 'men';
+  let currentPos = 'all';
+
+  // ── データキャッシュ ─────────────────────────────────────
+  let membersCache = null;
+
+  function getMembers() {
+    return membersCache !== null ? membersCache : SAMPLE;
+  }
+
+  // ── Firestore からデータをリアルタイム取得 ──────────────
+  onSnapshot(collection(db, "members"), (snapshot) => {
+    membersCache = snapshot.docs.map(d => d.data());
+    console.log('Firestoreから部員データ取得:', membersCache.length + '人');
+    renderPosFilter();
+    renderMembers();
+  }, (error) => {
+    console.error('Firestore読み込みエラー:', error);
   });
-  filter.innerHTML = html;
-  filter.querySelectorAll('.pos-badge').forEach(btn => {
+
+  function renderPosFilter() {
+    const members = getMembers().filter(m => m.gender === currentGender);
+    const positions = [...new Set(members.map(m => m.position))].sort();
+    const filter = document.getElementById('posFilter');
+    if (!filter) return;
+    if (currentGender === 'manager') { filter.style.display='none'; return; }
+    filter.style.display='flex';
+    let html = `<button class="pos-badge ${currentPos==='all'?'active':''}" data-pos="all">すべて</button>`;
+    positions.forEach(p => {
+      html += `<button class="pos-badge ${currentPos===p?'active':''}" data-pos="${p}">${POS_LABELS[p]||p}</button>`;
+    });
+    filter.innerHTML = html;
+    filter.querySelectorAll('.pos-badge').forEach(btn => {
+      btn.addEventListener('click', () => {
+        filter.querySelectorAll('.pos-badge').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentPos = btn.dataset.pos;
+        renderMembers();
+      });
+    });
+  }
+
+  function renderMembers() {
+    const all = getMembers().filter(m => m.gender === currentGender);
+    const list = (currentPos === 'all' || currentGender === 'manager') ? all : all.filter(m => m.position === currentPos);
+    const grid = document.getElementById('memberGrid');
+    const noData = document.getElementById('noData');
+    if (!grid) return;
+    if (!list.length) { grid.style.display='none'; if(noData) noData.style.display='block'; return; }
+    grid.style.display='grid'; if(noData) noData.style.display='none';
+
+    grid.innerHTML = list.map(m => {
+      const photoHTML = (m.photo && m.photo.length > 0)
+        ? `<img src="${m.photo}" alt="${m.name}">`
+        : `<div class="photo-placeholder"><span class="placeholder-icon">${m.position}</span></div>`;
+      const posBadge = currentGender !== 'manager' ? `<span class="member-pos-badge">${m.position}</span>` : `<span class="member-pos-badge">MGR</span>`;
+      return `
+        <div class="member-card" data-open-modal="${m.id}">
+          <div class="member-photo">
+            ${photoHTML}
+            ${posBadge}
+          </div>
+          <div class="member-info">
+            <div class="member-name">${m.name}</div>
+            <div class="member-meta">
+              <span>${m.year}年</span>
+              ${currentGender !== 'manager' ? `<span>${POS_LABELS[m.position]||m.position}</span>` : ''}
+            </div>
+            <div class="member-comment">"${m.comment}"</div>
+          </div>
+        </div>`;
+    }).join('');
+
+    // モーダルを開くクリックイベントを設定
+    grid.querySelectorAll('[data-open-modal]').forEach(card => {
+      card.addEventListener('click', () => openModal(Number(card.dataset.openModal)));
+    });
+  }
+
+  function openModal(id) {
+    const m = getMembers().find(x => Number(x.id) === Number(id)); if (!m) return;
+    const photoEl = document.getElementById('modalPhoto');
+    photoEl.innerHTML = (m.photo && m.photo.length > 0)
+      ? `<img src="${m.photo}" alt="${m.name}">`
+      : `<div class="no-photo">${m.position}</div>`;
+    document.getElementById('modalName').innerHTML =
+      `<span>${m.position}</span>${m.name}`;
+    document.getElementById('modalItems').innerHTML = `
+      <div class="modal-item"><span class="mlabel">YEAR</span><div class="mval">${m.year}年生</div></div>
+      ${m.gender !== 'manager' ? `<div class="modal-item"><span class="mlabel">POSITION</span><div class="mval">${m.position} / ${POS_LABELS[m.position]||m.position}</div></div>` : ''}
+      <div class="modal-item"><span class="mlabel">ORIGIN</span><div class="mval">${m.origin}</div></div>
+      <div class="modal-item"><span class="mlabel">ENTRY</span><div class="mval">${m.entry}</div></div>
+      <div class="modal-item"><span class="mlabel">SKILL / HOBBY</span><div class="mval">${m.skill}</div></div>
+      <div class="modal-item"><span class="mlabel">ONE WORD</span><div class="mval quote">「${m.comment}」</div></div>
+    `;
+    document.getElementById('modal').classList.add('show');
+  }
+
+  function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+  // モーダル外側クリックで閉じる
+  const modalEl = document.getElementById('modal');
+  if (modalEl) {
+    modalEl.addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+  }
+
+  // モーダルの閉じるボタン(もしあれば)を設定
+  document.querySelectorAll('[data-close-modal]').forEach(btn => {
+    btn.addEventListener('click', closeModal);
+  });
+
+  document.querySelectorAll('.gender-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      filter.querySelectorAll('.pos-badge').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      currentPos = btn.dataset.pos;
+      currentGender = btn.dataset.g;
+      currentPos = 'all';
+      renderPosFilter();
       renderMembers();
     });
   });
-}
 
-function renderMembers() {
-  const all = getMembers().filter(m => m.gender === currentGender);
-  const list = (currentPos === 'all' || currentGender === 'manager') ? all : all.filter(m => m.position === currentPos);
-  const grid = document.getElementById('memberGrid');
-  const noData = document.getElementById('noData');
-  if (!list.length) { grid.style.display='none'; noData.style.display='block'; return; }
-  grid.style.display='grid'; noData.style.display='none';
+  renderPosFilter();
+  renderMembers();
 
-  grid.innerHTML = list.map(m => {
-    const photoHTML = m.photo
-      ? `<img src="${m.photo}" alt="${m.name}">`
-      : `<div class="photo-placeholder"><span class="placeholder-icon">${m.position}</span></div>`;
-    const posBadge = currentGender !== 'manager' ? `<span class="member-pos-badge">${m.position}</span>` : `<span class="member-pos-badge">MGR</span>`;
-    return `
-      <div class="member-card" onclick="openModal(${m.id})">
-        <div class="member-photo">
-          ${photoHTML}
-          ${posBadge}
-        </div>
-        <div class="member-info">
-          <div class="member-name">${m.name}</div>
-          <div class="member-meta">
-            <span>${m.year}年</span>
-            ${currentGender !== 'manager' ? `<span>${POS_LABELS[m.position]||m.position}</span>` : ''}
-          </div>
-          <div class="member-comment">"${m.comment}"</div>
-        </div>
-      </div>`;
-  }).join('');
-}
+  const io = new IntersectionObserver(entries => entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:0.08});
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
-function openModal(id) {
-  const m = getMembers().find(x => x.id === id); if (!m) return;
-  const photoEl = document.getElementById('modalPhoto');
-  photoEl.innerHTML = m.photo
-    ? `<img src="${m.photo}" alt="${m.name}">`
-    : `<div class="no-photo">${m.position}</div>`;
-  document.getElementById('modalName').innerHTML =
-    `<span>${m.position}</span>${m.name}`;
-  document.getElementById('modalItems').innerHTML = `
-    <div class="modal-item"><span class="mlabel">YEAR</span><div class="mval">${m.year}年生</div></div>
-    ${m.gender !== 'manager' ? `<div class="modal-item"><span class="mlabel">POSITION</span><div class="mval">${m.position} / ${POS_LABELS[m.position]||m.position}</div></div>` : ''}
-    <div class="modal-item"><span class="mlabel">ORIGIN</span><div class="mval">${m.origin}</div></div>
-    <div class="modal-item"><span class="mlabel">ENTRY</span><div class="mval">${m.entry}</div></div>
-    <div class="modal-item"><span class="mlabel">SKILL / HOBBY</span><div class="mval">${m.skill}</div></div>
-    <div class="modal-item"><span class="mlabel">ONE WORD</span><div class="mval quote">「${m.comment}」</div></div>
-  `;
-  document.getElementById('modal').classList.add('show');
-}
-function closeModal() { document.getElementById('modal').classList.remove('show'); }
-document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
-
-document.querySelectorAll('.gender-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentGender = btn.dataset.g;
-    currentPos = 'all';
-    renderPosFilter();
-    renderMembers();
-  });
-});
-
-renderPosFilter();
-renderMembers();
-
-const io = new IntersectionObserver(entries => entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); }), {threshold:0.08});
-document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  console.log("members.html Firebase 連携完了!");
 </script>
+
 </body>
 </html>
